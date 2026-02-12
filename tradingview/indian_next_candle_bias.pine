@@ -1,0 +1,22 @@
+//@version=5
+indicator("Indian Next Candle Bias AI", overlay=true, max_labels_count=500)
+
+bullProb = input.float(0.55, "Bull Probability", minval=0.0, maxval=1.0)
+confidence = input.float(68.0, "Confidence %", minval=0.0, maxval=100.0)
+showAlerts = input.bool(true, "Enable Alerts")
+
+isBull = bullProb >= 0.5
+biasText = isBull ? "NEXT: BULLISH" : "NEXT: BEARISH"
+
+plotshape(isBull, title="Bullish Bias", style=shape.triangleup, color=color.new(color.lime, 0), location=location.belowbar, size=size.tiny, text="AI B")
+plotshape(not isBull, title="Bearish Bias", style=shape.triangledown, color=color.new(color.red, 0), location=location.abovebar, size=size.tiny, text="AI S")
+
+labelColor = confidence > 70 ? color.new(color.green, 0) : confidence > 50 ? color.new(color.orange, 0) : color.new(color.red, 0)
+var label biasLabel = na
+if barstate.islast
+    label.delete(biasLabel)
+    biasLabel := label.new(bar_index, high, str.format("{0}\nConf: {1}%", biasText, str.tostring(confidence, "#.0")), style=label.style_label_down, textcolor=color.white, color=labelColor)
+
+if showAlerts
+    alertcondition(isBull, "Indian AI Bullish", "Bullish next-candle bias for Indian symbol")
+    alertcondition(not isBull, "Indian AI Bearish", "Bearish next-candle bias for Indian symbol")
